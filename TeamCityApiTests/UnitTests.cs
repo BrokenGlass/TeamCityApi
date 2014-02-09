@@ -42,12 +42,36 @@ namespace TeamCityApiTests
             Assert.That(projects.All(x=> x.Name!=null));
         }
 
+        [Test]
+        public void CanGetBuildsForProjects()
+        {
+            var projects = api.GetProjects();
+
+            var testProject = projects.First();
+            var builds = testProject.GetBuilds();
+
+
+            Assert.That(builds != null && builds.Any());
+        }
+
+        [Test]
+        public void NoBuildTypeShowsUpMoreThanOnceForRecentBuildsFromProjects()
+        {
+            var projects = api.GetProjects();
+
+            var testProject = projects.First();
+            var builds = testProject.GetMostRecentBuilds();
+
+            HashSet<Build> buildHash = new HashSet<Build>();
+
+            Assert.That(builds.All(b=> buildHash.Add(b)));
+        }
+
 
         [Test]
         public void CanGetBuildConfigurationsForProject()
         {
             var projects = api.GetProjects();
-
 
             foreach(var project in projects)
             {
@@ -56,10 +80,28 @@ namespace TeamCityApiTests
                 {
                     var builds = buildTypes.First().GetBuilds();
 
-                    builds.ForEach(b => Assert.That(b.StartTime > DateTime.Now.AddYears(-1))); //some bs assert for now
+                    builds.ForEach(b => Assert.That(b.Name != null));
                 }
             }
         }
+
+        [Test]
+        public void CanGetBuildDetailsFromBuild()
+        {
+            var projects = api.GetProjects();
+            foreach (var project in projects)
+            {
+                var builds = project.GetBuilds();
+                if (builds.Any())
+                {
+                    var buildDetails = builds.First().GetBuildDetails();
+
+                    Assert.That(buildDetails != null && buildDetails.Name != null && buildDetails.ProjectName != null && buildDetails.StatusText != null);
+                    break;
+                }
+            }
+        }
+
 
     }
 }

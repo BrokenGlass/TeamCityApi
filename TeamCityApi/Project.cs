@@ -12,6 +12,23 @@ namespace TeamCity
         {
         }
 
+        public List<Build> GetBuilds()
+        {
+            var xml = Api.TeamCityRestApiCall(string.Format(TeamCityEndpoint.BuildsForProject, Id));
+            return xml.Descendants("build").Select(b => new Build(Api, b)).ToList();
+        }
+
+        public List<Build> GetMostRecentBuilds()
+        {
+            var allBuilds = GetBuilds();
+
+            var builds = allBuilds.GroupBy(x => x.Id)
+                                  .Select(g => g.OrderByDescending(x => x.StartTime).First())
+                                  .ToList();
+
+            return builds;
+        }
+
         public List<BuildType> GetBuildTypes()
         {
             var details = Api.TeamCityRestApiCall(string.Format(TeamCityEndpoint.ProjectDetails, Id));

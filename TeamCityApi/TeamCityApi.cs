@@ -11,6 +11,9 @@ namespace TeamCity
     {
         private TeamCityConfiguration _configuration;
 
+        public TeamCityApi(TeamCityConfiguration config): this(config.ServerUrl, config.UserName, config.Password)
+        { }
+
         public TeamCityApi(string server, string userName, string password)
         {
             ServicePointManager.ServerCertificateValidationCallback += (a, b, c, d) => true;
@@ -22,16 +25,9 @@ namespace TeamCity
             };
         }
 
-
-        public void Connect(string userName, string password)
-        {
-
-        }
-
         public bool Authenticate()
         {
             //test API connection
-
             try
             {
                 string version = TeamCityRestApiCall(TeamCityEndpoint.ApiRoot + "server").Value;
@@ -49,9 +45,15 @@ namespace TeamCity
             return xml.Descendants("project").Select(p => new Project(this, p)).ToList();
         }
 
+        public List<BuildType> GetBuildTypes()
+        {
+            var xml = TeamCityRestApiCall(TeamCityEndpoint.BuildTypes);
+            return xml.Descendants("buildType").Select(bt => new BuildType(this, bt)).ToList();
+        }
+
         internal XElement TeamCityRestApiCall(string endpointUrl)
         {
-            using (WebClient wc = new WebClient())
+            using (TimeOutWebClient wc = new TimeOutWebClient())
             {
                 wc.Credentials = new System.Net.NetworkCredential(_configuration.UserName, _configuration.Password);                                                                 
                 string url = _configuration.ServerUrl +  endpointUrl;
