@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Net;
+using System.Globalization;
 
 namespace TeamCity
 {
     public class TimeOutWebClient : WebClient
     {
-        /// <summary>
-        /// Time in milliseconds
-        /// </summary>
         public TimeSpan Timeout { get; set; }
 
         public TimeOutWebClient() : this(60000) { }
@@ -33,4 +31,16 @@ namespace TeamCity
             return request;
         }
     }
+
+    public static class TeamCityUtils
+    {
+        public static DateTime ParseTime(string s)
+        {
+            DateTime time;
+            DateTime.TryParseExact(s, "yyyyMMddTHHmmsszz00", CultureInfo.InvariantCulture, DateTimeStyles.None, out time);
+            return time;
+        }
+
+    }
+
 }

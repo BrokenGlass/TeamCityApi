@@ -22,9 +22,7 @@ namespace TeamCity
             if (xml.Attribute("startDate") != null)
             {
                 var startDate = xml.Attribute("startDate").Value;
-                DateTime startTime;
-                DateTime.TryParseExact(startDate, "yyyyMMddTHHmmsszz00", CultureInfo.InvariantCulture, DateTimeStyles.None, out startTime);
-                StartTime = startTime;
+                StartTime = TeamCityUtils.ParseTime(startDate);
             }
         }
 
@@ -34,10 +32,12 @@ namespace TeamCity
         }
     }
 
+
     public class BuildDetails : Build
     {
         public string StatusText { get; set; }
         public string ProjectName { get; set; }
+        public DateTime? EndTime { get; set; }
 
         public BuildDetails(TeamCityApi api, XElement xml) : base(api, xml)
         {
@@ -45,6 +45,18 @@ namespace TeamCity
             if (statusTextElement != null)
             {
                 StatusText = statusTextElement.Value;
+            }
+
+            var startTimeNode = xml.Descendants("startDate").FirstOrDefault();
+            if (startTimeNode != null)
+            {
+                StartTime = TeamCityUtils.ParseTime(startTimeNode.Value);
+            }
+
+            var endTimeNode = xml.Descendants("finishDate").FirstOrDefault();
+            if (endTimeNode != null)
+            {
+                EndTime = TeamCityUtils.ParseTime(endTimeNode.Value);
             }
 
             var buildTypeNode = xml.Descendants("buildType").First();
