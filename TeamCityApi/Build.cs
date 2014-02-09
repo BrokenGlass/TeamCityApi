@@ -12,12 +12,13 @@ namespace TeamCity
         public bool Succeeded { get; set; }
         public DateTime? StartTime { get; set; }
         public string LogHtmlHRef { get; set; }
-
+        public string BuildTypeId { get; set; }
 
         public Build(TeamCityApi api, XElement xml) : base(api, xml)
         {
             Succeeded = xml.Attribute("status").Value == "SUCCESS";
             LogHtmlHRef = (string)xml.Attribute("webUrl");
+            BuildTypeId = (string)xml.Attribute("buildTypeId");
 
             if (xml.Attribute("startDate") != null)
             {

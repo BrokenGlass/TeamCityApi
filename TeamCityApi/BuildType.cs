@@ -18,26 +18,35 @@ namespace TeamCity
             return new BuildTypeDetails(Api, details);
         }
 
-        public List<Build> GetBuilds()
+        public List<Build> GetBuilds(int count = 0)
         {
-            return GetBuildTypeDetails().Builds;
+            return GetBuildTypeDetails().GetBuilds(count);
         }
     }
 
 
     public class BuildTypeDetails : TeamCityApiResult
     {
-        public List<Build> Builds;
-
         public BuildTypeDetails(TeamCityApi api, XElement xml) : base(api, xml)
         {
-            var href = Xml.Element("builds").Attribute("href").Value;
-            var buildXml = Api.TeamCityRestApiCall(href);
+        }
 
-            Builds = buildXml.Descendants("build")
-                             .Select(b => new Build(Api, b))
-                             .OrderByDescending(b=> b.StartTime)
-                             .ToList();
+        public List<Build> GetBuilds(int count = 0)
+        {
+            var href = Xml.Element("builds").Attribute("href").Value;
+            if (count > 0)
+            {
+                href += "?count=" + count;
+            }
+
+            var buildXml = Api.TeamCityRestApiCall(href);
+            var builds = buildXml.Descendants("build")
+                                 .Select(b => new Build(Api, b))
+                                 .OrderByDescending(b => b.StartTime)
+                                 .ToList();
+
+
+            return builds;
         }
     }
 
