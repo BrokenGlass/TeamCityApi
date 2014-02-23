@@ -12,8 +12,9 @@ namespace TeamCity
         public const string BuildTypes = "/httpAuth/app/rest/buildTypes";
         public const string ProjectDetails = "/httpAuth/app/rest/projects/id:{0}";
         public const string BuildTypeDetails = "/httpAuth/app/rest/buildTypes/id:{0}";
-        public const string Builds = BuildTypeDetails + "/builds/";
-        //public const string BuildsForProject = "/httpAuth/app/rest/projects/{0}/buildTypes";
+		public const string LatestBuildForBuildType = "/httpAuth/app/rest/builds/buildType:{0}";
+		public const string BuildsForBuildType = BuildTypeDetails + "/builds/";
+		public const string AllBuilds = "/httpAuth/app/rest/builds/?count=500";
         public const string BuildsForProject = "/httpAuth/app/rest/builds/?locator=project:(id:{0})";
     }
 }

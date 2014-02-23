@@ -39,6 +39,12 @@ namespace TeamCity
             }
         }
 
+		public List<Build> GetBuilds()
+		{
+			var xml = TeamCityRestApiCall(TeamCityEndpoint.AllBuilds);
+			return xml.Descendants("build").Select(b => new Build(this, b)).ToList();
+		}
+
         public List<Project> GetProjects()
         {
             var xml = TeamCityRestApiCall(TeamCityEndpoint.Projects);
@@ -50,9 +56,15 @@ namespace TeamCity
             var xml = TeamCityRestApiCall(TeamCityEndpoint.BuildTypes);
             return xml.Descendants("buildType").Select(bt => new BuildType(this, bt)).ToList();
         }
+		public BuildDetails GetLatestBuildForBuildType(string buildTypeId)
+		{
+			var xml = TeamCityRestApiCall (TeamCityEndpoint.LatestBuildForBuildType);
+			return new BuildDetails (this, xml);
+		}
 
         internal XElement TeamCityRestApiCall(string endpointUrl)
         {
+			Console.WriteLine ("HTTP request to " + endpointUrl);
             using (TimeOutWebClient wc = new TimeOutWebClient())
             {
                 wc.Credentials = new System.Net.NetworkCredential(_configuration.UserName, _configuration.Password);                                                                 
