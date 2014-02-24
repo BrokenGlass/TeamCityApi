@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +13,9 @@ namespace TeamCity
         public DateTime? StartTime { get; set; }
         public string LogHtmlHRef { get; set; }
         public string BuildTypeId { get; set; }
+		public bool IsRunning {get;set;}
+		public int PercentageComplete { get; set; }
+
 
         public Build(TeamCityApi api, XElement xml) : base(api, xml)
         {
@@ -36,6 +39,7 @@ namespace TeamCity
 
     public class BuildDetails : Build
     {
+		public string BuildTypeId { get; set; }
         public string StatusText { get; set; }
         public string ProjectName { get; set; }
         public DateTime? EndTime { get; set; }
@@ -62,6 +66,7 @@ namespace TeamCity
 
             var buildTypeNode = xml.Descendants("buildType").First();
 
+			BuildTypeId = (string)buildTypeNode.Attribute("id");
             Name = (string)buildTypeNode.Attribute("name");
             ProjectName = (string)buildTypeNode.Attribute("projectName");
         }
