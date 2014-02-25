@@ -1,5 +1,0 @@
-/Users/michael/Projects/TeamCityApi/TeamCityApi/obj/Debug/.NETFramework,Version=v4.0.AssemblyAttribute.cs
-/Users/michael/Projects/TeamCityApi/TeamCityApi/bin/Debug/TeamCityApi.dll.mdb
-/Users/michael/Projects/TeamCityApi/TeamCityApi/bin/Debug/TeamCityApi.dll
-/Users/michael/Projects/TeamCityApi/TeamCityApi/obj/Debug/TeamCityApi.dll
-/Users/michael/Projects/TeamCityApi/TeamCityApi/obj/Debug/TeamCityApi.dll.mdb
