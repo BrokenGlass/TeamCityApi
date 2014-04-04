@@ -8,8 +8,13 @@ namespace TeamCity
 {
     public class BuildType : TeamCityApiResult
     {
+		public string ProjectName { get; set; }
+		public string ProjectId { get;set; }
+
         public BuildType(TeamCityApi api, XElement xml) : base(api, xml)
         {
+			ProjectName = (string)xml.Attribute ("projectName");
+			ProjectId = (string)xml.Attribute ("projectId");
         }
 
         private BuildTypeDetails GetBuildTypeDetails()

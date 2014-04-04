@@ -28,6 +28,11 @@ namespace TeamCity
                 var startDate = xml.Attribute("startDate").Value;
                 StartTime = TeamCityUtils.ParseTime(startDate);
             }
+
+			if (xml.Attribute ("running") != null)
+			{
+				IsRunning = bool.Parse (xml.Attribute ("running").Value);
+			}
         }
 
         public BuildDetails GetBuildDetails()
