@@ -17,7 +17,7 @@ namespace TeamCity
 
 		public TeamCityApi(string server, string userName, string password, bool useGuestLogin)
         {
-            ServicePointManager.ServerCertificateValidationCallback += (a, b, c, d) => true;
+            ServicePointManager.ServerCertificateValidationCallback = (a, b, c, d) => true;
             _configuration = new TeamCityConfiguration()
             {
                 ServerUrl = server.TrimEnd('/'),
@@ -46,6 +46,13 @@ namespace TeamCity
                 return false;
             }
         }
+
+		public bool TriggerBuild(string buildTypeId)
+		{
+			bool wasSuccessful = TeamCityHttpCall (string.Format (TeamCityEndpoint.TriggerBuild, buildTypeId)) != null;
+			return wasSuccessful;
+		}
+
 		public TeamCityVersionInfo GetVersion()
 		{
 			if (_versionInfo == null)
@@ -63,9 +70,10 @@ namespace TeamCity
 		}
 
 
-		public List<Build> GetRunningBuilds()
+		public List<Build> GetRunningBuilds(string buildTypeId = null)
 		{
-			var xml = TeamCityRestApiCall(TeamCityEndpoint.RunningBuilds);
+			var xml = buildTypeId == null ? TeamCityRestApiCall(TeamCityEndpoint.RunningBuilds)
+										  : TeamCityRestApiCall(string.Format(TeamCityEndpoint.RunningBuildsForBuildType, buildTypeId));
 			return xml != null ? xml.Descendants ("build").Select (b => new Build (this, b)).ToList () : null;
 		}
 
@@ -75,6 +83,22 @@ namespace TeamCity
 			return xml != null ? xml.Descendants ("build").Select (b => new Build (this, b)).ToList () : null;
 		}
 
+		public List<Build> GetBuilds(string buildTypeId)
+		{
+			var xml = TeamCityRestApiCall(string.Format(TeamCityEndpoint.BuildsForBuildType, buildTypeId));
+			return xml != null ? xml.Descendants ("build").Select (b => new Build (this, b)).ToList () : null;
+		}
+
+		public IList<TestResult> GetTestResults(string buildId)
+		{
+			var results =  TeamCityHttpCall (string.Format (TeamCityEndpoint.TestsForBuildId, buildId));
+			return TestResult.ParseCsv (results);
+		}
+
+		public string GetBuildLog(string buildId)
+		{
+			return TeamCityHttpCall (string.Format (TeamCityEndpoint.BuildLog, buildId));
+		}
 
 		public List<Project> GetProjects(Project project = null)
         {
@@ -106,12 +130,39 @@ namespace TeamCity
 			var xml = TeamCityRestApiCall (string.Format(TeamCityEndpoint.BuildDetails, id));
 			return xml != null ? new BuildDetails (this, xml) : null;
 		}
+			
+		internal string TeamCityHttpCall(string endpointUrl)
+		{
+			try
+			{
+				Console.WriteLine ("HTTP request to " + endpointUrl);
+				using (TimeOutWebClient wc = new TimeOutWebClient())
+				{
+					string userName  = _configuration.UseGuestLogin ? "guest" : _configuration.UserName;
+					string password =  _configuration.UseGuestLogin ? "" : _configuration.Password;
 
-		//https://ci.zocdoc.com:801/httpAuth/app/rest/builds/?locator=running:true,buildType:bt728,count:1
-		
+					wc.Credentials = new System.Net.NetworkCredential(userName, password);  
+
+					string url = _configuration.ServerUrl +  endpointUrl;
+					string result = wc.DownloadString(url);
+					return result;
+				}
+			}
+			catch(WebException)
+			{
+				return null;
+			}
+		}
 
         internal XElement TeamCityRestApiCall(string endpointUrl)
         {
+			if (_versionInfo == null && !endpointUrl.EndsWith(TeamCityEndpoint.Server))
+			{
+				Authenticate ();
+			}
+
+			endpointUrl = TeamCityEndpoint.GetEndPoint (endpointUrl, _versionInfo);
+
 			try
 			{
 				Console.WriteLine ("HTTP request to " + endpointUrl);

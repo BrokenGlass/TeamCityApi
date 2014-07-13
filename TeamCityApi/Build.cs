@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -22,12 +22,18 @@ namespace TeamCity
             Succeeded = xml.Attribute("status").Value == "SUCCESS";
             LogHtmlHRef = (string)xml.Attribute("webUrl");
             BuildTypeId = (string)xml.Attribute("buildTypeId");
+			PercentageComplete = xml.Attribute("percentageComplete")  != null ? (int)xml.Attribute("percentageComplete") : 0;
 
-            if (xml.Attribute("startDate") != null)
-            {
-                var startDate = xml.Attribute("startDate").Value;
-                StartTime = TeamCityUtils.ParseTime(startDate);
-            }
+			if (xml.Attribute ("startDate") != null)
+			{
+				var startDate = xml.Attribute ("startDate").Value;
+				StartTime = TeamCityUtils.ParseTime (startDate);
+			} 
+			else if (xml.Element ("startDate") != null)
+			{
+				var startDate = xml.Element ("startDate").Value;
+				StartTime = TeamCityUtils.ParseTime (startDate);
+			}
 
 			if (xml.Attribute ("running") != null)
 			{
@@ -48,6 +54,8 @@ namespace TeamCity
         public string StatusText { get; set; }
         public string ProjectName { get; set; }
         public DateTime? EndTime { get; set; }
+		public RunningInfo RunInfo { get; set; }
+		public List<Build> SnapshotDependencies { get; private set; }
 
         public BuildDetails(TeamCityApi api, XElement xml) : base(api, xml)
         {
@@ -56,6 +64,24 @@ namespace TeamCity
             {
                 StatusText = statusTextElement.Value;
             }
+
+			var runningInfo = xml.Descendants("running-info").FirstOrDefault();
+			if (runningInfo != null)
+			{
+				RunInfo = new RunningInfo (runningInfo);
+			}
+
+			var snapshotDependencies = xml.Descendants("snapshot-dependencies").FirstOrDefault();
+			if (snapshotDependencies != null)
+			{
+				SnapshotDependencies = snapshotDependencies.Descendants ("build")
+														   .Select (b => new Build (api, b))
+														   .ToList ();
+			} 
+			else
+			{
+				SnapshotDependencies = new List<Build> ();
+			}
 
             var startTimeNode = xml.Descendants("startDate").FirstOrDefault();
             if (startTimeNode != null)
@@ -76,4 +102,20 @@ namespace TeamCity
             ProjectName = (string)buildTypeNode.Attribute("projectName");
         }
     }
+
+	public class RunningInfo
+	{
+		public int PercentageComplete {get; set;}
+		public int ElapsedSeconds {get; set;}
+		public int EstimatedTotalSeconds {get; set;}
+		public string CurrentStageText {get; set;}
+
+		public RunningInfo(XElement node)
+		{
+			PercentageComplete = (int)node.Attribute ("percentageComplete");
+			ElapsedSeconds = (int)node.Attribute ("elapsedSeconds");
+			EstimatedTotalSeconds = (int)node.Attribute ("estimatedTotalSeconds");
+			CurrentStageText = (string)node.Attribute ("currentStageText");
+		}
+	}
 }
