@@ -41,7 +41,7 @@ namespace TeamCity
 				};
               	return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }
@@ -66,9 +66,14 @@ namespace TeamCity
 		public List<Build> GetBuilds()
 		{
 			var xml = TeamCityRestApiCall(TeamCityEndpoint.AllBuilds);
-			return xml != null ? xml.Descendants ("build").Select (b => new Build (this, b)).ToList () : null;
+			return xml != null ? xml.Descendants ("build").Select (b => new Build (this, b)).ToList () : new List<Build>();
 		}
 
+		public List<Build> GetBuildsSince(DateTime startTime)
+		{
+			var xml = TeamCityRestApiCall(string.Format(TeamCityEndpoint.AllBuildsSince, startTime.ToTeamCityTime()));
+			return xml != null ? xml.Descendants ("build").Select (b => new Build (this, b)).ToList () : null;
+		}
 
 		public List<Build> GetRunningBuilds(string buildTypeId = null)
 		{
@@ -87,6 +92,12 @@ namespace TeamCity
 		{
 			var xml = TeamCityRestApiCall(string.Format(TeamCityEndpoint.BuildsForBuildType, buildTypeId));
 			return xml != null ? xml.Descendants ("build").Select (b => new Build (this, b)).ToList () : null;
+		}
+
+		public IList<BuildResult> GetBuildHistory(string buildTypeId)
+		{
+			var results =  TeamCityHttpCall (string.Format (TeamCityEndpoint.BuildHistoryForBuildType, buildTypeId));
+			return BuildResult.ParseCsv (results);
 		}
 
 		public IList<TestResult> GetTestResults(string buildId)
@@ -178,7 +189,7 @@ namespace TeamCity
 	                return XElement.Parse(resultXml);
 	            }
 			}
-			catch(WebException)
+			catch(Exception)
 			{
 				return null;
 			}

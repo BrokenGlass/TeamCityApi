@@ -40,7 +40,21 @@ namespace TeamCity
             DateTime.TryParseExact(s, "yyyyMMddTHHmmsszz00", CultureInfo.InvariantCulture, DateTimeStyles.None, out time);
             return time;
         }
-
+		public static string FormatTime(DateTime time)
+		{
+			string result = time.ToString ("yyyyMMddTHHmmsszz00");
+			return result;
+		}
     }
+
+
+	public static class DateTimeHelper
+	{
+		public static string ToTeamCityTime(this DateTime time)
+		{
+			string result = time.ToString ("yyyyMMddTHHmmsszz00");
+			return result;
+		}
+	}
 
 }

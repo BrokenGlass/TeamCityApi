@@ -10,7 +10,9 @@ namespace TeamCity
     public class Build : TeamCityApiResult
     {
         public bool Succeeded { get; set; }
+		public string StatusText { get; set; }
         public DateTime? StartTime { get; set; }
+		public DateTime? EndTime { get; set; }
         public string LogHtmlHRef { get; set; }
         public string BuildTypeId { get; set; }
 		public bool IsRunning {get;set;}
@@ -35,6 +37,17 @@ namespace TeamCity
 				StartTime = TeamCityUtils.ParseTime (startDate);
 			}
 
+			if(xml.Element ("finishDate") != null)
+			{
+				var endDate = xml.Element ("finishDate").Value;
+				EndTime = TeamCityUtils.ParseTime (endDate);
+			}
+
+			if(xml.Element ("statusText") != null)
+			{
+				StatusText = xml.Element ("statusText").Value;
+			}
+
 			if (xml.Attribute ("running") != null)
 			{
 				IsRunning = bool.Parse (xml.Attribute ("running").Value);
@@ -50,11 +63,8 @@ namespace TeamCity
 
     public class BuildDetails : Build
     {
-		public string BuildTypeId { get; set; }
-        public string StatusText { get; set; }
-        public string ProjectName { get; set; }
-        public DateTime? EndTime { get; set; }
-		public RunningInfo RunInfo { get; set; }
+		public string ProjectName { get; set; }
+        public RunningInfo RunInfo { get; set; }
 		public List<Build> SnapshotDependencies { get; private set; }
 
         public BuildDetails(TeamCityApi api, XElement xml) : base(api, xml)
@@ -109,6 +119,10 @@ namespace TeamCity
 		public int ElapsedSeconds {get; set;}
 		public int EstimatedTotalSeconds {get; set;}
 		public string CurrentStageText {get; set;}
+
+		public RunningInfo()
+		{
+		}
 
 		public RunningInfo(XElement node)
 		{

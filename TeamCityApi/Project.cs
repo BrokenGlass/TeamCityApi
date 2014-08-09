@@ -36,7 +36,6 @@ namespace TeamCity
         }
     }
 
-
     public class ProjectDetails : TeamCityApiResult
     {
         public List<BuildType> BuildTypes { get; set; }

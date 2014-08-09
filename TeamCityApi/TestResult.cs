@@ -22,12 +22,14 @@ namespace TeamCity
 		{
 			List<TestResult> results = new List<TestResult> ();
 			var rows = csv.Split ( new[] {'\n'}, StringSplitOptions.RemoveEmptyEntries);
+			string shortTestName;
 
 			foreach (var row in rows.Skip(1))
 			{
 				var columns = row.Trim().Split (',');
 				var order = int.Parse(columns [0]);
 				var testName = string.Join(",", columns.Skip(1).Take(columns.Length-3));
+				testName = testName.Trim ('"', ' ');
 				var testResultStatus = columns [columns.Length-2];
 				var succeeded = columns [columns.Length-2] == "OK";
 				var muted = columns [columns.Length-2] == "Muted failure";
