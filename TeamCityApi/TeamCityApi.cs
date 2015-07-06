@@ -47,9 +47,18 @@ namespace TeamCity
             }
         }
 
-		public bool TriggerBuild(string buildTypeId)
+		public bool TriggerBuild(string buildTypeId, Dictionary<string,string> buildParameters = null)
 		{
-			bool wasSuccessful = TeamCityHttpCall (string.Format (TeamCityEndpoint.TriggerBuild, buildTypeId)) != null;
+			string url = string.Format (TeamCityEndpoint.TriggerBuild, buildTypeId);
+			if (buildParameters != null)
+			{
+				foreach (var bp in buildParameters)
+				{
+					url += string.Format ("&name={0}&value={1}", bp.Key, bp.Value);
+				}
+			}
+
+			bool wasSuccessful = TeamCityHttpCall (url) != null;
 			return wasSuccessful;
 		}
 
@@ -111,6 +120,11 @@ namespace TeamCity
 			return TeamCityHttpCall (string.Format (TeamCityEndpoint.BuildLog, buildId));
 		}
 
+		public string GetTextResult(string relativeUrl)
+		{
+			return TeamCityHttpCall (relativeUrl);
+		}
+
 		public List<Project> GetProjects(Project project = null)
         {
 			string endpoint = project == null ? TeamCityEndpoint.Projects : string.Format (TeamCityEndpoint.ContainedProjects, project.Id);
@@ -140,6 +154,30 @@ namespace TeamCity
 		{
 			var xml = TeamCityRestApiCall (string.Format(TeamCityEndpoint.BuildDetails, id));
 			return xml != null ? new BuildDetails (this, xml) : null;
+		}
+
+		public BuildTypeDetails GetBuildTypeDetails(string id)
+		{
+			var xml = TeamCityRestApiCall (string.Format(TeamCityEndpoint.BuildTypeDetails, id));
+			return xml != null ? new BuildTypeDetails (this, xml) : null;
+		}
+
+		public List<BuildArtifact> GetBuildArtifacts(string id)
+		{
+			var xml = TeamCityRestApiCall (string.Format(TeamCityEndpoint.Artifacts, id));
+			return xml != null ? BuildArtifact.Parse(this, xml) : null;
+		}
+
+		public List<Change> GetChanges(string id)
+		{
+			var xml = TeamCityRestApiCall (string.Format(TeamCityEndpoint.Changes, id));
+			return xml != null ? Change.Parse(this, xml) : null;
+		}
+
+		public ChangeDetail GetChangeDetails(string id)
+		{
+			var xml = TeamCityRestApiCall (string.Format(TeamCityEndpoint.ChangeDetails, id));
+			return xml != null ? new ChangeDetail (this, xml) : null;
 		}
 			
 		internal string TeamCityHttpCall(string endpointUrl)

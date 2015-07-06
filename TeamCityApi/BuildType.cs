@@ -29,11 +29,22 @@ namespace TeamCity
         }
     }
 
-
     public class BuildTypeDetails : TeamCityApiResult
     {
+		public Dictionary<string,string> BuildParameters;
+
         public BuildTypeDetails(TeamCityApi api, XElement xml) : base(api, xml)
         {
+			BuildParameters = new Dictionary<string, string> ();
+
+			if (xml.Element ("parameters") != null)
+			{
+				var buildParams = xml.Element ("parameters").Elements ("property");
+				foreach (var bp in buildParams)
+				{
+					BuildParameters.Add ((string)bp.Attribute ("name"), (string)bp.Attribute ("value"));
+				}
+			}
         }
 
         public List<Build> GetBuilds(int count = 0)

@@ -22,7 +22,6 @@ namespace TeamCity
 		{
 			List<TestResult> results = new List<TestResult> ();
 			var rows = csv.Split ( new[] {'\n'}, StringSplitOptions.RemoveEmptyEntries);
-			string shortTestName;
 
 			foreach (var row in rows.Skip(1))
 			{

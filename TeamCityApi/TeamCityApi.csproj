@@ -12,7 +12,7 @@
     <AssemblyName>TeamCityApi</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <ReleaseVersion>2.0</ReleaseVersion>
+    <ReleaseVersion>2.4</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -54,6 +54,8 @@
     </Compile>
     <Compile Include="TestResult.cs" />
     <Compile Include="BuildResult.cs" />
+    <Compile Include="BuildArtifact.cs" />
+    <Compile Include="Change.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

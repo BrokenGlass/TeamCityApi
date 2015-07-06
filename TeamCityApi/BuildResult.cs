@@ -29,7 +29,8 @@ namespace TeamCity
 				var buildNumber = columns [0];//int.Parse(columns [0]);
 				var succeeded = columns [1] == "SUCCESS";
 				var startTime = DateTime.Parse(columns [2]);
-				var duration = int.Parse(columns [4]);
+				int duration = 0;
+				int.TryParse (columns [4], out duration);
 
 				results.Add (new BuildResult () 
 				{

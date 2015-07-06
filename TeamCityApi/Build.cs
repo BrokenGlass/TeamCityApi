@@ -66,6 +66,8 @@ namespace TeamCity
 		public string ProjectName { get; set; }
         public RunningInfo RunInfo { get; set; }
 		public List<Build> SnapshotDependencies { get; private set; }
+		public string TriggeredBy { get; set; }
+		public long Number { get; set; }
 
         public BuildDetails(TeamCityApi api, XElement xml) : base(api, xml)
         {
@@ -105,7 +107,24 @@ namespace TeamCity
                 EndTime = TeamCityUtils.ParseTime(endTimeNode.Value);
             }
 
+			var triggeredNode = xml.Descendants("triggered").FirstOrDefault();
+			if (triggeredNode != null)
+			{
+				var userNode = triggeredNode.Element ("user");
+				if (userNode != null)
+				{
+					TriggeredBy = userNode.Attribute ("username").Value;
+				}
+			}
+
             var buildTypeNode = xml.Descendants("buildType").First();
+
+			if (xml.Attribute ("number") != null)
+			{
+				long number = 0;
+				long.TryParse (xml.Attribute ("number").Value, out number);
+				Number = number;
+			}
 
 			BuildTypeId = (string)buildTypeNode.Attribute("id");
             Name = (string)buildTypeNode.Attribute("name");

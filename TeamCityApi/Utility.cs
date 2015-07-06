@@ -37,12 +37,12 @@ namespace TeamCity
         public static DateTime ParseTime(string s)
         {
             DateTime time;
-            DateTime.TryParseExact(s, "yyyyMMddTHHmmsszz00", CultureInfo.InvariantCulture, DateTimeStyles.None, out time);
+			DateTime.TryParseExact(s, "yyyyMMdd'T'HHmmsszzz", CultureInfo.InvariantCulture, DateTimeStyles.None, out time);
             return time;
         }
 		public static string FormatTime(DateTime time)
 		{
-			string result = time.ToString ("yyyyMMddTHHmmsszz00");
+			string result = time.ToString ("yyyyMMdd'T'HHmmsszzz");
 			return result;
 		}
     }
@@ -52,7 +52,7 @@ namespace TeamCity
 	{
 		public static string ToTeamCityTime(this DateTime time)
 		{
-			string result = time.ToString ("yyyyMMddTHHmmsszz00");
+			string result = time.ToString ("yyyyMMdd'T'HHmmsszzz");
 			return result;
 		}
 	}
