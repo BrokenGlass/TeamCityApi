@@ -4,23 +4,47 @@ using System.Linq;
 using System.Text;
 using System.Net;
 using System.Globalization;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Net.Http.Headers;
+using ModernHttpClient;
+
 
 namespace TeamCity
 {
-    public class TimeOutWebClient : WebClient
+	public class TimeOutWebClient : HttpClient
     {
-        public TimeSpan Timeout { get; set; }
+        //public TimeSpan Timeout { get; set; }
 
         public TimeOutWebClient() : this(60000) { }
         public TimeOutWebClient(int seconds) : this(TimeSpan.FromSeconds(seconds))
         {
         }
 
-        public TimeOutWebClient(TimeSpan t) 
+
+		public TimeOutWebClient(TimeSpan t) : base(new NativeMessageHandler())
         {
             Timeout = t;
+			this.Timeout = t;
         }
 
+		public string DownloadString(string requestUri)
+		{
+			var task = this.GetStringAsync (requestUri);
+			//need to do this so we don't try to marshall back to original context and potentially deadlock
+			task.ConfigureAwait (false);
+			task.Wait ();
+			return task.Result;
+		}
+
+
+		public void SetCredentials(string userName, string password)
+		{
+			var byteArray = Encoding.ASCII.GetBytes(string.Format("{0}:{1}", userName,password));
+			var header = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+			this.DefaultRequestHeaders.Authorization = header;
+		}
+		/*
         protected override WebRequest GetWebRequest(Uri address)
         {
             var request = base.GetWebRequest(address);
@@ -30,6 +54,7 @@ namespace TeamCity
             }
             return request;
         }
+        */
     }
 
     public static class TeamCityUtils

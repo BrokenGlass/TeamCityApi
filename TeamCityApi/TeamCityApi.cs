@@ -41,7 +41,7 @@ namespace TeamCity
 				};
               	return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return false;
             }
@@ -190,8 +190,7 @@ namespace TeamCity
 					string userName  = _configuration.UseGuestLogin ? "guest" : _configuration.UserName;
 					string password =  _configuration.UseGuestLogin ? "" : _configuration.Password;
 
-					wc.Credentials = new System.Net.NetworkCredential(userName, password);  
-
+					wc.SetCredentials(userName, password);
 					string url = _configuration.ServerUrl +  endpointUrl;
 					string result = wc.DownloadString(url);
 					return result;
@@ -220,14 +219,14 @@ namespace TeamCity
 					string userName  = _configuration.UseGuestLogin ? "guest" : _configuration.UserName;
 					string password =  _configuration.UseGuestLogin ? "" : _configuration.Password;
 					
-					wc.Credentials = new System.Net.NetworkCredential(userName, password);  
+					wc.SetCredentials(userName, password);  
 
 	                string url = _configuration.ServerUrl +  endpointUrl;
 	                string resultXml = wc.DownloadString(url);
 	                return XElement.Parse(resultXml);
 	            }
 			}
-			catch(Exception)
+			catch(Exception ex)
 			{
 				return null;
 			}
