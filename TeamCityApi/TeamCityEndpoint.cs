@@ -29,24 +29,27 @@ namespace TeamCity
 		public const string RunningBuildsForBuildType = RunningBuilds + ",buildType:{0}";
 		public const string BuildsForProject = "/httpAuth/app/rest/builds/?locator=project:(id:{0})";
 		public const string BuildLog = "/httpAuth/downloadBuildLog.html?buildId={0}";
+		public const string BuildLogZipped = "/httpAuth/downloadBuildLog.html?buildId={0}&archived=true";
 		public const string Changes = "/httpAuth/app/rest/changes?locator=build:(id:{0})";
 		public const string ChangeDetails = "/httpAuth/app/rest/changes/id:{0}";
-		public const string AddFieldInfo = "fields=$long,build($short,startDate,finishDate,statusText)";
+		public const string AddFieldInfo = "fields=$long,buildType,build($short,name,id,startDate,buildType,finishDate,status,statusText)";
+		public const string AddProjectFieldInfo = "fields=project,parentProject";
 
 		public const string TriggerBuild = "/httpAuth/action.html?add2Queue={0}";
     
 		public static string GetEndPoint(string endpoint, TeamCityVersionInfo version)
 		{
-			if (version != null  && endpoint.Contains ("/builds/"))
+			if (version != null && (endpoint.Contains ("/builds/") || endpoint.EndsWith ("/projects")))
 			{
-				if(version.MajorVersion >8  || ( version.MajorVersion == 8 && version.MinorVersion >=1))
+				var fieldInfo = endpoint.Contains ("/builds/") ? AddFieldInfo : AddProjectFieldInfo;
+
+				if (version.MajorVersion > 8 || (version.MajorVersion == 8 && version.MinorVersion >= 1))
 				{
-					if(endpoint.Contains("?"))
+					if (endpoint.Contains ("?"))
 					{
-						endpoint = endpoint + "&" + AddFieldInfo;
-					}
-					else
-						endpoint = endpoint + "?" + AddFieldInfo;
+						endpoint = endpoint + "&" + fieldInfo;
+					} else
+						endpoint = endpoint + "?" + fieldInfo;
 				}
 			} 
 			return endpoint;

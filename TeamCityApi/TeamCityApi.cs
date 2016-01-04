@@ -11,11 +11,12 @@ namespace TeamCity
     {
         private TeamCityConfiguration _configuration;
 		private TeamCityVersionInfo _versionInfo = null;
+		public int TimeoutSeconds { get; set; }
 
-		public TeamCityApi(TeamCityConfiguration config): this(config.ServerUrl, config.UserName, config.Password, config.UseGuestLogin)
+		public TeamCityApi(TeamCityConfiguration config): this(config.ServerUrl, config.UserName, config.Password, config.UseGuestLogin, config.TimeoutSeconds)
         { }
 
-		public TeamCityApi(string server, string userName, string password, bool useGuestLogin)
+		public TeamCityApi(string server, string userName, string password, bool useGuestLogin, int timeoutSeconds)
         {
             ServicePointManager.ServerCertificateValidationCallback = (a, b, c, d) => true;
             _configuration = new TeamCityConfiguration()
@@ -25,6 +26,7 @@ namespace TeamCity
 				Password = password,
 				UseGuestLogin = useGuestLogin
             };
+			TimeoutSeconds = timeoutSeconds;
         }
 
         public bool Authenticate()
@@ -120,14 +122,19 @@ namespace TeamCity
 			return TeamCityHttpCall (string.Format (TeamCityEndpoint.BuildLog, buildId));
 		}
 
+		public byte[] GetBuildLogZipped(string buildId)
+		{
+			return TeamCityHttpDataCall (string.Format (TeamCityEndpoint.BuildLogZipped, buildId));
+		}
+
 		public string GetTextResult(string relativeUrl)
 		{
 			return TeamCityHttpCall (relativeUrl);
 		}
 
-		public List<Project> GetProjects(Project project = null)
+		public List<Project> GetProjects(string projectId)
         {
-			string endpoint = project == null ? TeamCityEndpoint.Projects : string.Format (TeamCityEndpoint.ContainedProjects, project.Id);
+			string endpoint = projectId == null ? TeamCityEndpoint.Projects : string.Format (TeamCityEndpoint.ContainedProjects, projectId);
 
 			var xml = TeamCityRestApiCall(endpoint);
 			return xml != null ? xml.Descendants("project").Select(p => new Project(this, p)).ToList() : null;
@@ -144,6 +151,15 @@ namespace TeamCity
             var xml = TeamCityRestApiCall(TeamCityEndpoint.BuildTypes);
 			return xml != null ? xml.Descendants ("buildType").Select (bt => new BuildType (this, bt)).ToList () : null;
         }
+
+		/*
+		public List<BuildDetails> GetLatestBuildsForProject(string projectId)
+		{
+			var xml = TeamCityRestApiCall (string.Format(TeamCityEndpoint.LatestBuildsForProject, projectId));
+			return xml != null ? xml.Descendants("build").Select(p => new BuildDetails(this, p)).ToList() : null;
+		}
+		*/
+
 		public BuildDetails GetLatestBuildForBuildType(string buildTypeId)
 		{
 			var xml = TeamCityRestApiCall (string.Format(TeamCityEndpoint.LatestBuildForBuildType, buildTypeId));
@@ -185,7 +201,7 @@ namespace TeamCity
 			try
 			{
 				Console.WriteLine ("HTTP request to " + endpointUrl);
-				using (TimeOutWebClient wc = new TimeOutWebClient())
+				using (TimeOutWebClient wc = new TimeOutWebClient(TimeoutSeconds))
 				{
 					string userName  = _configuration.UseGuestLogin ? "guest" : _configuration.UserName;
 					string password =  _configuration.UseGuestLogin ? "" : _configuration.Password;
@@ -193,6 +209,28 @@ namespace TeamCity
 					wc.SetCredentials(userName, password);
 					string url = _configuration.ServerUrl +  endpointUrl;
 					string result = wc.DownloadString(url);
+					return result;
+				}
+			}
+			catch(WebException)
+			{
+				return null;
+			}
+		}
+
+		internal byte[] TeamCityHttpDataCall(string endpointUrl)
+		{
+			try
+			{
+				Console.WriteLine ("HTTP request to " + endpointUrl);
+				using (TimeOutWebClient wc = new TimeOutWebClient(TimeoutSeconds))
+				{
+					string userName  = _configuration.UseGuestLogin ? "guest" : _configuration.UserName;
+					string password =  _configuration.UseGuestLogin ? "" : _configuration.Password;
+
+					wc.SetCredentials(userName, password);
+					string url = _configuration.ServerUrl +  endpointUrl;
+					var result = wc.DownloadData(url);
 					return result;
 				}
 			}
@@ -214,7 +252,7 @@ namespace TeamCity
 			try
 			{
 				Console.WriteLine ("HTTP request to " + endpointUrl);
-	            using (TimeOutWebClient wc = new TimeOutWebClient())
+				using (TimeOutWebClient wc = new TimeOutWebClient(TimeoutSeconds))
 	            {
 					string userName  = _configuration.UseGuestLogin ? "guest" : _configuration.UserName;
 					string password =  _configuration.UseGuestLogin ? "" : _configuration.Password;

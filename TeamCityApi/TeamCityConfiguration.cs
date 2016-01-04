@@ -11,5 +11,11 @@ namespace TeamCity
         public string UserName { get; set; }
         public string Password { get; set; }
 		public bool UseGuestLogin {get; set;}
+		public int TimeoutSeconds {get; set;}
+
+		public TeamCityConfiguration()
+		{
+			TimeoutSeconds = 60;
+		}
     }
 }

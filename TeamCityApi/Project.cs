@@ -8,8 +8,20 @@ namespace TeamCity
 {
     public class Project : TeamCityApiResult
     {
+		public string ParentProjectId { get; set; }
+		public string Description { get; set; }
+
         public Project(TeamCityApi api, XElement xml): base(api, xml)
         {
+			if (xml.Attribute ("parentProjectId") != null)
+			{
+				ParentProjectId = xml.Attribute ("parentProjectId").Value;
+			} 
+
+			if (xml.Attribute ("description") != null)
+			{
+				Description = xml.Attribute ("description").Value;
+			} 
         }
 
         public List<Build> GetBuilds()

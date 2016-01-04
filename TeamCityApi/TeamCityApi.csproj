@@ -12,7 +12,7 @@
     <AssemblyName>TeamCityApi</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <ReleaseVersion>2.4.3</ReleaseVersion>
+    <ReleaseVersion>2.5</ReleaseVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

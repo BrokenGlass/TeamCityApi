@@ -14,18 +14,14 @@ namespace TeamCity
 {
 	public class TimeOutWebClient : HttpClient
     {
-        //public TimeSpan Timeout { get; set; }
-
-        public TimeOutWebClient() : this(60000) { }
+        public TimeOutWebClient() : this(60) { }
         public TimeOutWebClient(int seconds) : this(TimeSpan.FromSeconds(seconds))
         {
         }
 
-
 		public TimeOutWebClient(TimeSpan t) : base(new NativeMessageHandler())
         {
-            Timeout = t;
-			this.Timeout = t;
+			Timeout = TimeSpan.FromSeconds (60000);// t;
         }
 
 		public string DownloadString(string requestUri)
@@ -37,6 +33,14 @@ namespace TeamCity
 			return task.Result;
 		}
 
+		public byte[] DownloadData(string requestUri)
+		{
+			var task = this.GetByteArrayAsync (requestUri);
+			//need to do this so we don't try to marshall back to original context and potentially deadlock
+			task.ConfigureAwait (false);
+			task.Wait ();
+			return task.Result;
+		}
 
 		public void SetCredentials(string userName, string password)
 		{
@@ -44,17 +48,6 @@ namespace TeamCity
 			var header = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
 			this.DefaultRequestHeaders.Authorization = header;
 		}
-		/*
-        protected override WebRequest GetWebRequest(Uri address)
-        {
-            var request = base.GetWebRequest(address);
-            if (request != null)
-            {
-                request.Timeout = (int)Timeout.TotalSeconds;
-            }
-            return request;
-        }
-        */
     }
 
     public static class TeamCityUtils
